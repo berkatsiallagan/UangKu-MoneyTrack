@@ -7,121 +7,381 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @media (max-width: 768px) {
+            .mobile-stack {
+                display: flex;
+                flex-direction: column;
+            }
+            .mobile-stack > * {
+                margin-bottom: 1rem;
+            }
+            .mobile-stack > *:last-child {
+                margin-bottom: 0;
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Print styles */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .bg-white {
+                background: white !important;
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold text-blue-600">MoneyTrack</h1>
-            <p class="text-gray-600">Aplikasi Pengelolaan Keuangan Pribadi</p>
-        </header>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Fixed Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-wallet text-2xl text-blue-600"></i>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-blue-600">MoneyTrack</h1>
+                    <p class="text-xs md:text-sm text-gray-600 hidden md:block">Aplikasi Pengelolaan Keuangan Pribadi</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="printBtn" class="hidden md:flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-print mr-1"></i>
+                    <span class="text-sm">Cetak</span>
+                </button>
+                <button id="exportBtn" class="hidden md:flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-file-export mr-1"></i>
+                    <span class="text-sm">Ekspor</span>
+                </button>
+                <button id="darkModeToggle" class="text-gray-600 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
 
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Sidebar -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow p-6 mb-6">
-                    <h2 class="text-xl font-semibold mb-4">Saldo Saat Ini</h2>
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Balance Card -->
+                <div class="bg-white rounded-lg shadow-md p-6 animate__animated animate__fadeInLeft">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Saldo Saat Ini</h2>
+                        <button id="refreshBtn" class="text-blue-600 hover:text-blue-800 transition-colors">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
                     <div class="text-center py-4">
                         <p class="text-gray-600">Total Saldo</p>
-                        <p id="totalBalance" class="text-3xl font-bold text-blue-600">Rp 0</p>
+                        <p id="totalBalance" class="text-3xl font-bold text-blue-600 animate__animated animate__pulse animate__faster">Rp 0</p>
                     </div>
                     <div class="grid grid-cols-2 gap-4 mt-4">
-                        <div class="bg-green-50 p-3 rounded-lg">
-                            <p class="text-gray-600">Pemasukan</p>
+                        <div class="bg-green-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <p class="text-gray-600 flex items-center">
+                                <i class="fas fa-arrow-down mr-1 text-green-500"></i> Pemasukan
+                            </p>
                             <p id="totalIncome" class="text-xl font-semibold text-green-600">Rp 0</p>
                         </div>
-                        <div class="bg-red-50 p-3 rounded-lg">
-                            <p class="text-gray-600">Pengeluaran</p>
+                        <div class="bg-red-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <p class="text-gray-600 flex items-center">
+                                <i class="fas fa-arrow-up mr-1 text-red-500"></i> Pengeluaran
+                            </p>
                             <p id="totalExpense" class="text-xl font-semibold text-red-600">Rp 0</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-semibold mb-4">Tambah Transaksi</h2>
-                    <form id="transactionForm">
-                        <div class="mb-4">
+                <!-- Add Transaction Form -->
+                <div class="bg-white rounded-lg shadow-md p-6 animate__animated animate__fadeInLeft animate__delay-1s">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Tambah Transaksi</h2>
+                        <button id="clearFormBtn" class="text-gray-500 hover:text-blue-600 transition-colors text-sm">
+                            <i class="fas fa-times mr-1"></i> Bersihkan
+                        </button>
+                    </div>
+                    <form id="transactionForm" class="space-y-4">
+                        <div>
                             <label class="block text-gray-700 mb-2" for="type">Jenis Transaksi</label>
-                            <select id="type" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="income">Pemasukan</option>
-                                <option value="expense">Pengeluaran</option>
-                            </select>
+                            <div class="relative">
+                                <select id="type" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none">
+                                    <option value="income">Pemasukan</option>
+                                    <option value="expense">Pengeluaran</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-4">
+                        <div>
                             <label class="block text-gray-700 mb-2" for="amount">Jumlah (Rp)</label>
-                            <input type="number" id="amount" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0" required>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                                <input type="number" id="amount" class="w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="0" required>
+                            </div>
                         </div>
-                        <div class="mb-4">
+                        <div>
                             <label class="block text-gray-700 mb-2" for="category">Kategori</label>
-                            <select id="category" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="gaji">Gaji</option>
-                                <option value="investasi">Investasi</option>
-                                <option value="hadiah">Hadiah</option>
-                                <option value="lainnya">Lainnya</option>
-                            </select>
+                            <div class="relative">
+                                <select id="category" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none">
+                                    <option value="gaji">Gaji</option>
+                                    <option value="investasi">Investasi</option>
+                                    <option value="hadiah">Hadiah</option>
+                                    <option value="makanan">Makanan</option>
+                                    <option value="transportasi">Transportasi</option>
+                                    <option value="hiburan">Hiburan</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-4">
+                        <div>
                             <label class="block text-gray-700 mb-2" for="date">Tanggal</label>
-                            <input type="date" id="date" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <div class="relative">
+                                <input type="date" id="date" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" required>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-4">
+                        <div>
                             <label class="block text-gray-700 mb-2" for="description">Keterangan</label>
-                            <textarea id="description" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Deskripsi transaksi"></textarea>
+                            <textarea id="description" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" rows="2" placeholder="Deskripsi transaksi"></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
-                            <i class="fas fa-plus mr-2"></i>Tambah Transaksi
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+                            <i class="fas fa-plus mr-2 animate__animated animate__pulse animate__infinite"></i>Tambah Transaksi
                         </button>
                     </form>
                 </div>
             </div>
 
             <!-- Main Content -->
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-2 space-y-6">
                 <!-- Charts Section -->
-                <div class="bg-white rounded-lg shadow p-6 mb-6">
-                    <h2 class="text-xl font-semibold mb-4">Grafik Keuangan</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                <div class="bg-white rounded-lg shadow-md p-6 animate__animated animate__fadeInRight">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Grafik Keuangan</h2>
+                        <div class="flex space-x-2">
+                            <button id="chartWeek" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-sm hover:bg-blue-200 transition-colors">Minggu Ini</button>
+                            <button id="chartMonth" class="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 transition-colors">Bulan Ini</button>
+                            <button id="chartYear" class="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 transition-colors">Tahun Ini</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mobile-stack">
+                        <div class="animate__animated animate__slide-up">
                             <canvas id="balanceChart"></canvas>
                         </div>
-                        <div>
+                        <div class="animate__animated animate__slide-up animate__delay-1s">
                             <canvas id="categoryChart"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <!-- Transaction History -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-4">
+                <div class="bg-white rounded-lg shadow-md p-6 animate__animated animate__fadeInRight animate__delay-1s">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-2 md:space-y-0">
                         <h2 class="text-xl font-semibold">Riwayat Transaksi</h2>
-                        <div class="flex space-x-2">
-                            <button id="filterAll" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-sm">Semua</button>
-                            <button id="filterIncome" class="px-3 py-1 bg-green-100 text-green-600 rounded-lg text-sm">Pemasukan</button>
-                            <button id="filterExpense" class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm">Pengeluaran</button>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="filterAll" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-sm hover:bg-blue-200 transition-colors">Semua</button>
+                            <button id="filterIncome" class="px-3 py-1 bg-green-100 text-green-600 rounded-lg text-sm hover:bg-green-200 transition-colors">Pemasukan</button>
+                            <button id="filterExpense" class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200 transition-colors">Pengeluaran</button>
+                            <button id="filterToday" class="px-3 py-1 bg-purple-100 text-purple-600 rounded-lg text-sm hover:bg-purple-200 transition-colors">Hari Ini</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="transactionList" class="bg-white divide-y divide-gray-200">
                                 <!-- Transactions will be added here dynamically -->
+                                <tr id="noTransactions" class="animate__animated animate__fadeIn">
+                                    <td colspan="5" class="px-4 py-4 text-center text-gray-500">
+                                        <i class="fas fa-wallet text-3xl text-gray-300 mb-2"></i>
+                                        <p>Belum ada transaksi</p>
+                                        <p class="text-sm">Tambahkan transaksi pertama Anda</p>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center text-sm text-gray-500">
+                        <div id="transactionCount">Menampilkan 0 transaksi</div>
+                        <div class="flex space-x-2">
+                            <button id="prevPage" class="px-3 py-1 bg-gray-100 rounded-lg disabled:opacity-50" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span id="pageInfo">Halaman 1</span>
+                            <button id="nextPage" class="px-3 py-1 bg-gray-100 rounded-lg disabled:opacity-50" disabled>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 no-print">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-wallet text-2xl text-blue-400"></i>
+                        <h3 class="text-xl font-bold">MoneyTrack</h3>
+                    </div>
+                    <p class="text-gray-300 mb-4">Aplikasi pengelola keuangan pribadi yang membantu Anda mengatur pemasukan dan pengeluaran dengan mudah.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Fitur</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Dashboard</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Transaksi</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Grafik</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Ekspor Data</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Kontak</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-blue-400"></i>
+                            <span>support@moneytrack.app</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2 text-blue-400"></i>
+                            <span>+62 123 4567 890</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2 text-blue-400"></i>
+                            <span>Jakarta, Indonesia</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm">
+                <p>&copy; 2023 MoneyTrack. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="fixed bottom-8 right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg opacity-0 invisible transition-all hover:bg-blue-700">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
     <script src="app.js"></script>
+    <script>
+        // Simple dark mode toggle
+        document.getElementById('darkModeToggle').addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            const icon = this.querySelector('i');
+            if (document.documentElement.classList.contains('dark')) {
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.documentElement.classList.add('dark');
+            document.getElementById('darkModeToggle').querySelector('i').classList.replace('fa-moon', 'fa-sun');
+        }
+
+        // Back to top button
+        const backToTopButton = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
+            }
+        });
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Print functionality
+        document.getElementById('printBtn').addEventListener('click', () => {
+            window.print();
+        });
+
+        // Set today's date as default in date input
+        document.getElementById('date').valueAsDate = new Date();
+    </script>
 </body>
 </html>
