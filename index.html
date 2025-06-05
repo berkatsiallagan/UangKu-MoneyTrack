@@ -32,6 +32,27 @@
         }
     </script>
     <style>
+        .refresh-focus {
+            animation: pulseFocus 0.5s infinite;
+            transform: scale(1);
+            position: relative;
+            z-index: 2001;
+        }
+        
+        @keyframes pulseFocus {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+                transform: scale(1);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+                transform: scale(1.1);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+                transform: scale(1);
+            }
+        }
         @media (max-width: 768px) {
             .mobile-stack {
                 display: flex;
@@ -342,5 +363,53 @@
 
     <script src="app.js"></script>
     <script src="security.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const reloadOverlay = document.getElementById('reloadOverlay');
+            
+            // Fokuskan pada refresh button saat halaman dimuat
+            setTimeout(() => {
+                refreshBtn.classList.add('refresh-focus');
+                
+                // Set timeout untuk menghilangkan fokus setelah beberapa detik
+                setTimeout(() => {
+                    refreshBtn.classList.remove('refresh-focus');
+                }, 5000);
+            }, 1000);
+            
+            // Handle klik refresh button
+            refreshBtn.addEventListener('click', function() {
+                // Aktifkan overlay gelap
+                reloadOverlay.classList.add('active');
+                
+                // Tambahkan efek pada tombol refresh
+                this.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+                this.classList.add('refresh-focus');
+                
+                // Simulasi reload data (ganti dengan fungsi reload data Anda)
+                setTimeout(() => {
+                    // Matikan overlay setelah selesai
+                    reloadOverlay.classList.remove('active');
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                    this.classList.remove('refresh-focus');
+                    
+                    // Tampilkan notifikasi
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Data Diperbarui',
+                        text: 'Data berhasil dimuat ulang',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    // Di sini Anda bisa memanggil fungsi untuk reload data
+                    // loadTransactionData();
+                    // updateCharts();
+                    // updateBalance();
+                }, 1500); // Waktu simulasi loading
+            });
+        });
+    </script>
 </body>
 </html>
