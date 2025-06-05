@@ -110,19 +110,6 @@
                     <p class="text-xs md:text-sm text-gray-600 hidden md:block">Aplikasi Pengelolaan Keuangan Pribadi</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-4">
-                <button id="printBtn" class="hidden md:flex items-center text-gray-600 hover:text-blue-600 transition-colors">
-                    <i class="fas fa-print mr-1"></i>
-                    <span class="text-sm">Cetak</span>
-                </button>
-                <button id="exportBtn" class="hidden md:flex items-center text-gray-600 hover:text-blue-600 transition-colors">
-                    <i class="fas fa-file-export mr-1"></i>
-                    <span class="text-sm">Ekspor</span>
-                </button>
-                <!-- <button id="darkModeToggle" class="text-gray-600 hover:text-blue-600 transition-colors">
-                    <i class="fas fa-moon"></i>
-                </button> -->
-            </div>
         </div>
     </header>
 
@@ -293,7 +280,7 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>                
             </div>
         </div>
     </main>
@@ -377,38 +364,6 @@
                     refreshBtn.classList.remove('refresh-focus');
                 }, 5000);
             }, 1000);
-            
-            // Handle klik refresh button
-            refreshBtn.addEventListener('click', function() {
-                // Aktifkan overlay gelap
-                reloadOverlay.classList.add('active');
-                
-                // Tambahkan efek pada tombol refresh
-                this.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
-                this.classList.add('refresh-focus');
-                
-                // Simulasi reload data (ganti dengan fungsi reload data Anda)
-                setTimeout(() => {
-                    // Matikan overlay setelah selesai
-                    reloadOverlay.classList.remove('active');
-                    this.innerHTML = '<i class="fas fa-sync-alt"></i>';
-                    this.classList.remove('refresh-focus');
-                    
-                    // Tampilkan notifikasi
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Data Diperbarui',
-                        text: 'Data berhasil dimuat ulang',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    
-                    // Di sini Anda bisa memanggil fungsi untuk reload data
-                    // loadTransactionData();
-                    // updateCharts();
-                    // updateBalance();
-                }, 1500); // Waktu simulasi loading
-            });
         });
     </script>
 </body>

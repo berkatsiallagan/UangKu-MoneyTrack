@@ -16,9 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const chartWeek = document.getElementById("chartWeek");
     const chartMonth = document.getElementById("chartMonth");
     const chartYear = document.getElementById("chartYear");
-    const exportBtn = document.getElementById("exportBtn");
-    const darkModeToggle = document.getElementById("darkModeToggle");
-    const printBtn = document.getElementById("printBtn");
     const backToTopButton = document.getElementById("backToTop");
   
     // Set default date to today
@@ -215,29 +212,6 @@ document.addEventListener("DOMContentLoaded", function () {
       setActiveChartButton(this);
     });
   
-    // Export button
-    exportBtn.addEventListener("click", function () {
-      exportData();
-    });
-  
-    // Print button
-    printBtn.addEventListener("click", function () {
-      window.print();
-    });
-  
-    // Dark mode toggle
-    darkModeToggle.addEventListener("click", function () {
-      document.documentElement.classList.toggle("dark");
-      const icon = this.querySelector("i");
-      if (document.documentElement.classList.contains("dark")) {
-        icon.classList.replace("fa-moon", "fa-sun");
-        localStorage.setItem("darkMode", "enabled");
-      } else {
-        icon.classList.replace("fa-sun", "fa-moon");
-        localStorage.setItem("darkMode", "disabled");
-      }
-    });
-  
     // Back to top button
     window.addEventListener("scroll", () => {
       if (window.pageYOffset > 300) {
@@ -271,64 +245,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Update localStorage
     function updateLocalStorage() {
       localStorage.setItem("transactions", JSON.stringify(transactions));
-    }
-  
-    // Export data
-    function exportData() {
-      if (transactions.length === 0) {
-        Swal.fire({
-          icon: "error",
-          title: "Tidak ada data",
-          text: "Tidak ada transaksi untuk diekspor",
-        });
-        return;
-      }
-  
-      // Convert to CSV
-      const headers = [
-        "Tanggal",
-        "Jenis",
-        "Kategori",
-        "Metode Pembayaran",
-        "Jumlah",
-        "Keterangan",
-      ];
-      const csvRows = [
-        headers.join(","),
-        ...transactions.map((t) =>
-          [
-            formatDate(t.date),
-            t.type === "income" ? "Pemasukan" : "Pengeluaran",
-            getCategoryName(t.category),
-            paymentMethods[t.paymentMethod] || t.paymentMethod,
-            t.amount,
-            t.description || "",
-          ]
-            .map((field) => `"${field}"`)
-            .join(",")
-        ),
-      ];
-  
-      const csv = csvRows.join("\n");
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-  
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `moneytrack_export_${new Date()
-        .toISOString()
-        .slice(0, 10)}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-  
-      Swal.fire({
-        icon: "success",
-        title: "Data berhasil diekspor",
-        showConfirmButton: false,
-        timer: 1500,
-      });
     }
   
     // Update UI
@@ -644,15 +560,6 @@ document.addEventListener("DOMContentLoaded", function () {
         year: "12 Bulan Terakhir",
       };
       return titles[period] || period;
-    }
-  
-    // Check for saved dark mode preference
-    if (localStorage.getItem("darkMode") === "enabled") {
-      document.documentElement.classList.add("dark");
-      document
-        .getElementById("darkModeToggle")
-        .querySelector("i")
-        .classList.replace("fa-moon", "fa-sun");
     }
   
     // Initial UI update
