@@ -1,6 +1,3 @@
-Here's an updated and improved `README.md` for your MoneyTrack application that matches the enhanced features from your HTML:
-
-```markdown
 # MoneyTrack - Aplikasi Pengelolaan Keuangan Pribadi
 
 ![MoneyTrack Screenshot](https://via.placeholder.com/1200x600.png?text=MoneyTrack+Dashboard+Dark+and+Light+Mode)
